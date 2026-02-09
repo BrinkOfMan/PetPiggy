@@ -1,0 +1,15 @@
+Items: {
+	PiggyPet: {
+		DisplayName: Pet Piggy
+		Tooltip: They are your friend
+	}
+}
+
+Projectiles.PiggyPetProjectile.DisplayName: Piggy Pet Projectile
+
+Buffs: {
+	PiggyPetBuff: {
+		Description: Piggy is curious what you are up to
+		DisplayName: Pet Piggy
+	}
+}
