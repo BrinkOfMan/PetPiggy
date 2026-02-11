@@ -1,4 +1,4 @@
 displayName = Pet Piggy
 author = bonobo no bobonono
-version = 1.0
+version = 1.1
 weakReferences = CalamityMod

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -15,6 +16,7 @@ namespace PetPiggy.Content.Projectiles
         private int oinkTimer = 3600;
         private int thoughtTimer = 100;
         private bool piggyHasNoticedAFruit = false;
+        private int fruitIconLifeTimer = 0;
         
         public override void SetStaticDefaults()
         {
@@ -39,16 +41,31 @@ namespace PetPiggy.Content.Projectiles
             Projectile.penetrate = -1;
         }
         
+        public override bool PreDraw(ref Color lightColor)
+        {
+            if (Main.myPlayer == Projectile.owner) 
+            {
+                Player player = Main.LocalPlayer;
+                Item heldItem = player.HeldItem;
+                bool holdingFruit = !heldItem.IsAir && RecipeGroup.recipeGroups[RecipeGroupID.Fruit].ContainsItem(heldItem.type);
+                
+                if (holdingFruit && Projectile.Distance(Main.MouseWorld) < 40f) 
+                {
+                    player.noThrow = 2;
+                    player.cursorItemIconEnabled = true;
+                    player.cursorItemIconID = heldItem.type;
+                    player.cursorItemIconText = ""; 
+                }
+            }
+            return true;
+        }
         
         public override void PostAI()
         {
             Player player = Main.player[Projectile.owner];
             ModdedPlayer modPlayer = player.GetModPlayer<ModdedPlayer>();
 
-            if (modPlayer.piggy && !player.dead && player.active)
-            {
-                Projectile.timeLeft = 2; 
-            }
+            if (modPlayer.piggy && !player.dead && player.active) Projectile.timeLeft = 2; 
         }
         
         public override void AI()
@@ -59,25 +76,15 @@ namespace PetPiggy.Content.Projectiles
             if (modPlayer.piggy && !player.dead && player.active)
             {
                 Projectile.timeLeft = 2;
-                if (Projectile.velocity.X is <= 0.05f and >= -0.05f)
-                {
-                    Projectile.frame = 0;
-                }
-                if (Projectile.frame >= 5)
-                {
-                    Projectile.frame = 0;
-                }
+                if (Projectile.velocity.X is <= 0.05f and >= -0.05f) Projectile.frame = 0;
+                if (Projectile.frame >= 5) Projectile.frame = 0;
             }
-            else 
-            {
-                Projectile.Kill();
-            }
+            else Projectile.Kill();
             
             bool isFlying = Projectile.ai[0] == 1;
             if (isFlying)
             {
                 Projectile.frame = 1; 
-                
                 if (Main.rand.NextBool(3)) 
                 {
                     Dust.NewDust(Projectile.position, Projectile.width, Projectile.height, DustID.Cloud, 0, 0, 150, default, 0.8f);
@@ -85,10 +92,7 @@ namespace PetPiggy.Content.Projectiles
             }
             else
             {
-                if (player.justJumped)
-                {
-                    jumpTimer = 10;
-                }
+                if (player.justJumped) jumpTimer = 10;
                 if (jumpTimer > 0)
                 {
                     jumpTimer--;
@@ -113,11 +117,7 @@ namespace PetPiggy.Content.Projectiles
             }
             
             Projectile.spriteDirection = Projectile.direction;
-            
-            if (oinkTimer > 0)
-            {
-                oinkTimer--;
-            }
+            if (oinkTimer > 0) oinkTimer--;
             else
             {
                 Terraria.Audio.SoundEngine.PlaySound(SoundID.Item59 with { Volume = 0.8f, Pitch = 0.2f }, Projectile.position);
@@ -133,9 +133,9 @@ namespace PetPiggy.Content.Projectiles
                     Projectile.direction = (player.Center.X < Projectile.Center.X) ? -1 : 1;
                     EmoteBubble.NewBubble(3, new WorldUIAnchor(Projectile), 90);
                 }
+                float distanceToMouse = Vector2.Distance(Main.MouseWorld, Projectile.Center);
                 if (Main.mouseRight && Main.mouseRightRelease) {
-                    if (Projectile.Hitbox.Contains(Main.MouseWorld.ToPoint())) {
-                
+                    if (distanceToMouse < 40f) {
                         for (int i = 0; i < 5; i++) {
                             int dustType = Main.rand.NextBool() ? DustID.Blood : DustID.Cloud;
                             Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, dustType);
