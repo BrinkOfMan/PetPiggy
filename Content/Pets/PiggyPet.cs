@@ -36,6 +36,7 @@ namespace PetPiggy.Content.Pets
 		public override void AddRecipes()
 		{
 			Recipe recipe = CreateRecipe();
+			Recipe recipe2 = CreateRecipe();
 
 			if (ModLoader.HasMod("CalamityMod"))
 			{
@@ -46,7 +47,11 @@ namespace PetPiggy.Content.Pets
 			{
 				recipe.AddIngredient(ItemID.Bacon);
 				recipe.AddTile(TileID.CookingPots);
+				recipe2.AddIngredient(ItemID.PiggyBank);
+				recipe2.AddTile(TileID.DemonAltar);
+				recipe2.Register();
 			}
+
 
 			recipe.Register();
 		}

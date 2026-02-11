@@ -1,8 +1,8 @@
-[h1]oink[/h1]
+[h1]Oink![/h1]
 
 [h2]This is a mod that allows users to transform the Calamity Mod's Piggy NPC into a little companion.[/h2]
 
-[h2]Should you not have calamity installed, a recipe for the pet is included using vanilla items.[/h2]
+[h2]Should you not have calamity installed, some recipes for the pet is included using vanilla items.[/h2]
 
 [hr][/hr]
 
@@ -15,8 +15,6 @@
 [/olist]
 
 This mod's source code can be found [url=https://github.com/BrinkOfMan/PetPiggy]here[/url]
-
-[quote=Aidandu]oink[/quote]
 
 [hr][/hr]
 

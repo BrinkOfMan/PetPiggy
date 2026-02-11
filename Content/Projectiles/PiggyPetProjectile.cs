@@ -3,6 +3,8 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using PetPiggy.Content.PiggyPlayer;
+using Terraria.GameContent;
+using Terraria.GameContent.UI;
 
 namespace PetPiggy.Content.Projectiles
 {
@@ -11,6 +13,8 @@ namespace PetPiggy.Content.Projectiles
         private int jumpTimer = 0;
         private int piggyJumpTimer = 0;
         private int oinkTimer = 3600;
+        private int thoughtTimer = 100;
+        private bool piggyHasNoticedAFruit = false;
         
         public override void SetStaticDefaults()
         {
@@ -26,7 +30,7 @@ namespace PetPiggy.Content.Projectiles
         {
             Projectile.netImportant = true;
             Projectile.tileCollide = true;
-            Projectile.width = 26;
+            Projectile.width = 30;
             Projectile.height = 23;
             Projectile.friendly = true;
             Projectile.aiStyle = ProjAIStyleID.Pet;
@@ -34,6 +38,7 @@ namespace PetPiggy.Content.Projectiles
             Main.projFrames[Projectile.type] = 5;
             Projectile.penetrate = -1;
         }
+        
         
         public override void PostAI()
         {
@@ -117,6 +122,46 @@ namespace PetPiggy.Content.Projectiles
             {
                 Terraria.Audio.SoundEngine.PlaySound(SoundID.Item59 with { Volume = 0.8f, Pitch = 0.2f }, Projectile.position);
                 oinkTimer = Main.rand.Next(7200, 10801);
+            }
+            
+            Item heldItem = player.HeldItem;
+            bool holdingFruit = !heldItem.IsAir && RecipeGroup.recipeGroups[RecipeGroupID.Fruit].ContainsItem(heldItem.type);
+            if (player.HeldItem.active && holdingFruit) {
+                thoughtTimer++;
+                if (thoughtTimer >= 20 && Main.netMode != NetmodeID.Server && !piggyHasNoticedAFruit) {
+                    piggyHasNoticedAFruit = true;
+                    Projectile.direction = (player.Center.X < Projectile.Center.X) ? -1 : 1;
+                    EmoteBubble.NewBubble(3, new WorldUIAnchor(Projectile), 90);
+                }
+                if (Main.mouseRight && Main.mouseRightRelease) {
+                    if (Projectile.Hitbox.Contains(Main.MouseWorld.ToPoint())) {
+                
+                        for (int i = 0; i < 5; i++) {
+                            int dustType = Main.rand.NextBool() ? DustID.Blood : DustID.Cloud;
+                            Dust d = Dust.NewDustDirect(Projectile.position, Projectile.width, Projectile.height, dustType);
+                            d.velocity = new Vector2(Main.rand.NextFloat(-1f, 1f), Main.rand.NextFloat(0f, 0.25f));
+                            d.noGravity = false;
+                            d.scale = Main.rand.NextFloat(0.6f, 1.1f);
+                            d.fadeIn = 0.2f;
+                        }
+                        
+                        if (Projectile.owner == Main.myPlayer) {
+                            heldItem.stack--;
+                            if (heldItem.stack <= 0) heldItem.SetDefaults(0);
+                        }
+                        Terraria.Audio.SoundEngine.PlaySound(SoundID.Item2 with { Pitch = 0.5f }, Projectile.position);
+                        if (Main.netMode != NetmodeID.Server) {
+                            EmoteBubble.NewBubble(EmoteID.EmotionLove, new WorldUIAnchor(Projectile), 120);
+                        }
+                        
+                        Projectile.velocity.Y = -4f;
+                        piggyJumpTimer = 15;
+                    }
+                }
+            }
+            else {
+                thoughtTimer = 0;
+                piggyHasNoticedAFruit = false;
             }
         }
     }
